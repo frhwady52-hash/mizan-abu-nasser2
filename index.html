@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ميزان أبو ناصر</title>
+<style>
+body{font-family:Arial;background:#edf2f8;margin:0;color:#172033}
+header{background:#123b78;color:white;text-align:center;padding:22px}
+main{max-width:500px;margin:auto;padding:15px}
+.box{background:white;padding:18px;border-radius:16px;margin:14px 0;box-shadow:0 3px 12px #0001}
+label{display:block;font-weight:bold;margin-bottom:8px}
+input,select{width:100%;padding:14px;box-sizing:border-box;border:2px solid #ddd;border-radius:10px;font-size:22px;margin-bottom:14px}
+.result{background:#078b3c;color:white;text-align:center;padding:20px;border-radius:15px}
+.result h1{color:#ffeb3b;font-size:45px;direction:ltr}
+button{width:100%;padding:14px;border:0;border-radius:10px;background:#1674e8;color:white;font-size:18px;margin-top:8px;font-weight:bold}
+.green{background:#078b3c}
+.gray{background:#475467}
+li{padding:10px;border-bottom:1px solid #ddd}
+</style>
+</head>
+<body>
+<header>
+<h1>⚖️ ميزان أبو ناصر</h1>
+<p>حساب الوزن والسعر بالشيكل</p>
+</header>
+<main>
+<div class="box">
+<label>سعر الكيلو (شيكل)</label>
+<input id="price" type="number" value="36" min="0">
+<label>نوع الوزن</label>
+<select id="unit">
+<option value="g">جرام</option>
+<option value="kg">كيلو</option>
+</select>
+<label>الوزن</label>
+<input id="weight" type="number" placeholder="أدخل الوزن" min="0">
+</div>
+
+<div class="result">
+<strong>السعر النهائي</strong>
+<h1 id="total">₪ 0.00</h1>
+<span id="details">0 جرام</span>
+</div>
+
+<div class="box">
+<label>كم جرام مقابل مبلغ؟</label>
+<input id="cash" type="number" placeholder="المبلغ بالشيكل">
+<h3 id="grams">0 جرام</h3>
+</div>
+
+<div class="box">
+<button class="green" onclick="saveSale()">حفظ البيع</button>
+<button class="gray" onclick="resetForm()">تصفير الوزن</button>
+</div>
+
+<div class="box">
+<h3>سجل المبيعات</h3>
+<ul id="sales"></ul>
+<h3 id="sum">الإجمالي: ₪ 0.00</h3>
+</div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+let sales=JSON.parse(localStorage.getItem("salesAbu")||"[]");
+
+function calculate(){
+let p=Number($("price").value)||0;
+let w=Number($("weight").value)||0;
+let g=$("unit").value==="kg"?w*1000:w;
+let total=p*g/1000;
+$("total").innerText="₪ "+total.toFixed(2);
+$("details").innerText=g+" جرام";
+let cash=Number($("cash").value)||0;
+$("grams").innerText=p>0?(cash*1000/p).toFixed(2)+" جرام":"0 جرام";
+}
+["price","weight","unit","cash"].forEach(id=>{
+$(id).addEventListener("input",calculate);
+$(id).addEventListener("change",calculate);
+});
+
+function saveSale(){
+let p=Number($("price").value)||0;
+let w=Number($("weight").value)||0;
+let g=$("unit").value==="kg"?w*1000:w;
+if(p<=0||g<=0){alert("أدخل السعر والوزن");return;}
+sales.unshift({g,total:p*g/1000});
+localStorage.setItem("salesAbu",JSON.stringify(sales));
+showSales();
+}
+function showSales(){
+$("sales").innerHTML="";
+let sum=0;
+sales.forEach(s=>{
+sum+=s.total;
+let li=document.createElement("li");
+li.textContent=s.g+" جرام — ₪ "+s.total.toFixed(2);
+$("sales").appendChild(li);
+});
+$("sum").innerText="الإجمالي: ₪ "+sum.toFixed(2);
+}
+function resetForm(){
+$("weight").value="";
+$("cash").value="";
+calculate();
+}
+calculate();
+showSales();
+</script>
+</body>
+</html>
